@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>My Poems</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;1,7..72,400&family=DM+Mono:wght@400;500&display=swap">
+<style>
+*{box-sizing:border-box}
+body{margin:0}
+[hidden]{display:none!important}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+/* Layout: a plain white page; the poem keeps its original line breaks, with controls and timeline beneath it. */
+:root{
+  --bg:#ffffff; --ink:#111111; --muted:#8a8a8a; --line:#e2e2e2;
+  --mono:"DM Mono",ui-monospace,Menlo,monospace;
+  --body:"Literata",Georgia,"Times New Roman",serif;
+  color-scheme:light;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);padding-inline:16px}
+.wrap{max-width:760px;margin:0 auto;padding-block:24px 40px;display:flex;flex-direction:column;gap:28px;min-height:100%;box-sizing:border-box}
+.site{display:flex;flex-direction:column;align-items:center;gap:14px}
+.brand{font:500 26px var(--body);letter-spacing:.01em;color:var(--ink);background:none;border:0;padding:0;cursor:pointer}
+.sections{display:flex;gap:0;overflow-x:auto;max-width:100%;border-bottom:1px solid var(--line);scrollbar-width:none}
+.sections::-webkit-scrollbar{display:none}
+.track{display:flex;flex:none}
+.sections.marquee{overflow:hidden;-webkit-mask-image:linear-gradient(to right,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(to right,transparent,#000 6%,#000 94%,transparent)}
+.sections.marquee .track{animation:ticker var(--dur,40s) linear infinite}
+.sections.marquee:hover .track,.sections.marquee:focus-within .track{animation-play-state:paused}
+@keyframes ticker{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+.sections button{font:13px var(--mono);color:var(--muted);background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:10px 16px;cursor:pointer;white-space:nowrap}
+.sections button:hover{color:var(--ink)}
+.sections button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+.link{font:13px var(--mono);color:var(--muted);background:none;border:0;padding:4px 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.link:hover{color:var(--ink)}
+button:focus-visible,label:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.poem{flex:1;min-width:0;display:flex;flex-direction:column}
+.num{font:500 22px var(--mono);margin:0 0 24px;text-align:center}
+.scroll{overflow-x:auto;min-width:0}
+.text{text-align:left;white-space:pre;line-height:1.75;margin:0;font-size:17px;width:max-content;min-width:100%;box-sizing:border-box}
+.text.empty{color:var(--muted);font-style:italic}
+.nav{display:flex;justify-content:center;align-items:center;gap:28px}
+.arrow{background:none;border:0;font:22px var(--mono);color:var(--ink);cursor:pointer;padding:6px 10px}
+.arrow:disabled{color:var(--line);cursor:default}
+.timeline{padding-top:28px;position:relative}
+.bubble{position:absolute;top:0;transform:translateX(-50%);font:12px var(--mono);color:var(--ink);pointer-events:none;white-space:nowrap}
+.ticks{position:absolute;left:0;right:0;top:41px;height:6px;pointer-events:none}
+.ticks span{position:absolute;width:1px;height:6px;background:var(--line)}
+input[type=range]{width:100%;-webkit-appearance:none;appearance:none;background:transparent;height:24px;margin:0;position:relative;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:1px;background:linear-gradient(to right,var(--ink) var(--p,0%),var(--line) var(--p,0%))}
+input[type=range]::-moz-range-track{height:1px;background:var(--line)}
+input[type=range]::-moz-range-progress{height:1px;background:var(--ink)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--ink);margin-top:-6px;border:0}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--ink);border:0}
+.ends{display:flex;justify-content:space-between;font:11px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.panel{flex:1;display:flex;flex-direction:column;gap:20px;max-width:440px;width:100%;margin:0 auto}
+.panel h2{font:500 13px var(--mono);margin:0;color:var(--muted)}
+.field{display:flex;gap:10px;flex-wrap:wrap}
+.field input{flex:1;min-width:0;font:15px var(--body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:9px 10px}
+.field input:focus{border-color:var(--ink);outline:none}
+.solid{font:13px var(--mono);color:var(--bg);background:var(--ink);border:0;border-radius:4px;padding:9px 16px;cursor:pointer}
+.solid:disabled{opacity:.4;cursor:default}
+.msg{font-size:13px;color:var(--muted);min-height:1.2em;margin:0;line-height:1.5}
+.files{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.files li{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:15px}
+.files .name{flex:1;min-width:0;overflow-wrap:anywhere}
+.files .count{font:12px var(--mono);color:var(--muted);white-space:nowrap}
+.files .acts{display:flex;gap:10px}
+.empty-list{color:var(--muted);font-size:14px;padding:12px 0;border-bottom:1px solid var(--line)}
+.hint{font-size:13px;color:var(--muted);line-height:1.6;margin:0}
+.hint code{font-family:var(--mono)}
+.hint a{color:var(--ink)}
+a.solid{text-decoration:none;display:inline-block}
+@media (prefers-reduced-motion:no-preference){.poem{transition:opacity .15s}.poem.fade{opacity:0}}
+</style>
+
+</head>
+<body>
+<div id="root"><div class="wrap">
+  <header class="site">
+    <button class="brand" id="brand" aria-label="My Poems, open the file directory">My Poems</button>
+    <nav class="sections" id="sections" role="tablist" aria-label="Files"></nav>
+  </header>
+
+  <main id="reader" class="poem-view" style="display:contents">
+    <article class="poem" id="poem" aria-live="polite">
+      <p class="num" id="num"></p>
+      <div class="scroll"><p class="text" id="text"></p></div>
+    </article>
+    <div class="nav">
+      <button class="arrow" id="prev" aria-label="Previous poem">&larr;</button>
+      <button class="link" id="shuffle">shuffle</button>
+      <button class="arrow" id="next" aria-label="Next poem">&rarr;</button>
+    </div>
+    <div>
+      <div class="timeline">
+        <span class="bubble" id="bubble"></span>
+        <div class="ticks" id="ticks"></div>
+        <input type="range" id="scrub" min="0" max="0" value="0" aria-label="Poem timeline">
+      </div>
+      <div class="ends"><span id="first"></span><span id="last"></span></div>
+    </div>
+  </main>
+
+  <section class="panel" id="lock" hidden>
+    <h2>Password</h2>
+    <form class="field" id="lockForm">
+      <input type="password" id="pw" autocomplete="current-password" aria-label="Password">
+      <button class="solid" type="submit">Enter</button>
+    </form>
+    <p class="msg" id="lockMsg"></p>
+    <button class="link" id="lockBack" type="button">back to poems</button>
+  </section>
+
+  <section class="panel" id="dir" hidden>
+    <h2>Files</h2>
+    <ul class="files" id="fileList"></ul>
+    <div class="field">
+      <a class="solid" id="uploadLink" target="_blank" rel="noopener">Upload .txt files on GitHub</a>
+    </div>
+    <p class="msg" id="dirMsg"></p>
+    <p class="hint">Start each poem with its number on its own line, like <code>/1</code>, <code>/2</code>. Each file in the <code>poems</code> folder gets its own tab under the heading. Changes show up on the site a minute or two after GitHub saves them.</p>
+    <p class="hint"><a id="orderLink" target="_blank" rel="noopener">Change tab order or names</a> by editing <code>poems/files.json</code>.</p>
+    <button class="link" id="dirBack" type="button">back to poems</button>
+  </section>
+</div></div>
+
+<script id="main">
+(() => {
+/* Settings. GITHUB_REPO is filled in automatically on GitHub Pages (owner.github.io/repo);
+   set it by hand, like "yourname/my-poems", if you use a custom domain. */
+const GITHUB_REPO = "";
+const BRANCH = "main";
+const PW_HASH = "fbd3526f0cb9a30df157e1b3db199e104896dc2ba088a72f14d1007e342c1e61"; /* SHA-256 of the password */
+const $ = id => document.getElementById(id);
+
+let state = {files: []};
+let sec = 0, i = 0;
+
+function parse(txt){
+  const out = []; let cur = null;
+  for (const line of txt.replace(/\r\n?/g, "\n").split("\n")){
+    const m = line.match(/^\s*\/(\d+)\s*$/);
+    if (m){ cur = {n: m[1], lines: []}; out.push(cur); }
+    else if (cur) cur.lines.push(line);
+  }
+  return out.map(p => ({n: p.n, text: p.lines.join("\n").replace(/^(\s*\n)+/, "").replace(/\s+$/, "")}));
+}
+
+const poems = () => (state.files[sec] || {poems: []}).poems;
+
+/* Reader */
+function fit(){
+  const el = $("text"), box = el.parentElement;
+  let size = 17; el.style.fontSize = size + "px";
+  while (el.scrollWidth > box.clientWidth && size > 12){ size -= 0.5; el.style.fontSize = size + "px"; }
+}
+const slug = name => name.replace(/\.txt$/i, "").replace(/[^A-Za-z0-9._~-]+/g, "-").replace(/^-+|-+$/g, "") || "file";
+const SPEED = 25; /* pixels per second for the moving tab row */
+const still = matchMedia("(prefers-reduced-motion: reduce)");
+function makeTabs(clone){
+  const track = document.createElement("div"); track.className = "track";
+  state.files.forEach((f, k) => {
+    const b = document.createElement("button");
+    b.textContent = f.title;
+    b.setAttribute("aria-selected", k === sec ? "true" : "false");
+    if (clone){ b.tabIndex = -1; b.setAttribute("aria-hidden", "true"); }
+    else b.setAttribute("role", "tab");
+    b.onclick = () => openSection(k, true);
+    track.appendChild(b);
+  });
+  return track;
+}
+function buildSections(){
+  const nav = $("sections"); nav.innerHTML = ""; nav.classList.remove("marquee");
+  nav.hidden = state.files.length === 0;
+  if (nav.hidden) return;
+  const track = makeTabs(false);
+  nav.appendChild(track);
+  /* When the tabs don't fit, run them as a slow ticker: two copies side by side loop seamlessly. */
+  if (track.scrollWidth > nav.clientWidth + 1 && !still.matches){
+    const both = document.createElement("div"); both.className = "track";
+    const copy = makeTabs(true);
+    both.append(...track.childNodes, ...copy.childNodes);
+    nav.innerHTML = ""; nav.appendChild(both);
+    nav.classList.add("marquee");
+    nav.style.setProperty("--dur", (both.scrollWidth / 2 / SPEED) + "s");
+  } else {
+    const cur = track.children[sec]; if (cur) cur.scrollIntoView({block: "nearest", inline: "nearest"});
+  }
+}
+let tabsWidth = 0;
+window.addEventListener("resize", () => { const w = $("sections").clientWidth; if (w !== tabsWidth){ tabsWidth = w; buildSections(); } });
+still.addEventListener && still.addEventListener("change", buildSections);
+function openSection(k, animate){
+  sec = k; i = 0;
+  try { history.replaceState(null, "", "#" + slug(state.files[k].title)); } catch (_) {}
+  if ($("reader").hidden) show("reader");
+  else {
+    /* Update the highlight in place so a moving ticker keeps its position. */
+    $("sections").querySelectorAll(".track button").forEach((b, n) => b.setAttribute("aria-selected", n % state.files.length === k ? "true" : "false"));
+    buildTicks(); render(animate);
+  }
+}
+function sectionFromHash(){
+  const h = decodeURIComponent((location.hash || "").slice(1));
+  const k = state.files.findIndex(f => slug(f.title) === h);
+  return k >= 0 ? k : 0;
+}
+window.addEventListener("hashchange", () => { const k = sectionFromHash(); if (k !== sec) openSection(k, true); });
+function buildTicks(){
+  const t = $("ticks"); t.innerHTML = "";
+  const max = poems().length - 1; if (max < 1) return;
+  poems().forEach((_, k) => {
+    const s = document.createElement("span");
+    s.style.left = `calc(6px + (100% - 12px) * ${k / max})`;
+    t.appendChild(s);
+  });
+}
+function render(animate){
+  const list = poems();
+  if (!list.length){
+    $("num").textContent = ""; $("text").textContent = "No poems yet."; $("text").classList.add("empty");
+    $("prev").disabled = $("next").disabled = true; return;
+  }
+  const p = list[i];
+  const draw = () => {
+    $("num").textContent = "/" + p.n;
+    $("text").textContent = p.text || "(This poem is blank in the file.)";
+    $("text").classList.toggle("empty", !p.text);
+    $("text").parentElement.scrollLeft = 0;
+    fit();
+    $("poem").classList.remove("fade");
+  };
+  if (animate){ $("poem").classList.add("fade"); setTimeout(draw, 130); } else draw();
+  const max = list.length - 1, s = $("scrub");
+  s.max = max; s.value = i;
+  const frac = max ? i / max : 0;
+  s.style.setProperty("--p", (frac * 100) + "%");
+  $("bubble").textContent = "/" + p.n;
+  $("bubble").style.left = `calc(6px + (100% - 12px) * ${frac})`;
+  $("prev").disabled = i === 0;
+  $("next").disabled = i === max;
+  $("first").textContent = "/" + list[0].n;
+  $("last").textContent = "/" + list[max].n;
+}
+function go(k){ if (k < 0 || k >= poems().length || k === i) return; i = k; render(true); }
+
+$("prev").onclick = () => go(i - 1);
+$("next").onclick = () => go(i + 1);
+$("shuffle").onclick = () => {
+  const n = poems().length; if (n < 2) return;
+  let k; do { k = Math.floor(Math.random() * n); } while (k === i);
+  go(k);
+};
+$("scrub").addEventListener("input", e => { i = +e.target.value; render(false); });
+document.addEventListener("keydown", e => {
+  if (e.target.matches("input,textarea") || $("reader").hidden) return;
+  if (e.key === "ArrowLeft") go(i - 1);
+  if (e.key === "ArrowRight") go(i + 1);
+});
+window.addEventListener("resize", fit);
+if (document.fonts) document.fonts.ready.then(fit);
+
+/* Views */
+let unlocked = false;
+function show(view){
+  $("reader").hidden = view !== "reader";
+  $("reader").style.display = view === "reader" ? "contents" : "";
+  $("lock").hidden = view !== "lock";
+  $("dir").hidden = view !== "dir";
+  if (view === "lock"){ $("pw").value = ""; $("lockMsg").textContent = ""; $("pw").focus(); }
+  if (view === "dir") buildList();
+  if (view === "reader"){ buildSections(); buildTicks(); render(false); }
+}
+$("brand").onclick = () => show($("reader").hidden ? "reader" : (unlocked ? "dir" : "lock"));
+$("lockBack").onclick = () => show("reader");
+$("dirBack").onclick = () => show("reader");
+
+async function sha256(s){
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+$("lockForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  if (await sha256($("pw").value) === PW_HASH){ unlocked = true; show("dir"); }
+  else $("lockMsg").textContent = "That password is incorrect.";
+});
+
+/* Directory: lists what's in the poems folder and links to GitHub, where uploads are actually saved. */
+function repo(){
+  if (GITHUB_REPO) return GITHUB_REPO;
+  const host = location.hostname;
+  if (!host.endsWith(".github.io")) return "";
+  const owner = host.split(".")[0];
+  const first = location.pathname.split("/").filter(Boolean)[0];
+  return owner + "/" + (first && !first.includes(".") ? first : host);
+}
+function buildList(){
+  const ul = $("fileList"); ul.innerHTML = "";
+  if (!state.files.length){
+    const li = document.createElement("li"); li.className = "empty-list"; li.textContent = "No files yet.";
+    ul.appendChild(li);
+  }
+  state.files.forEach(f => {
+    const li = document.createElement("li");
+    const name = document.createElement("span"); name.className = "name"; name.textContent = f.file;
+    const count = document.createElement("span"); count.className = "count"; count.textContent = f.poems.length + " poems";
+    li.append(name, count);
+    ul.appendChild(li);
+  });
+  const r = repo();
+  const up = $("uploadLink"), order = $("orderLink");
+  if (r){
+    up.href = `https://github.com/${r}/upload/${BRANCH}/poems`;
+    order.href = `https://github.com/${r}/edit/${BRANCH}/poems/files.json`;
+    up.hidden = false; $("dirMsg").textContent = "";
+  } else {
+    up.hidden = true; order.removeAttribute("href");
+    $("dirMsg").textContent = "To add files, put .txt files in the poems folder of the GitHub repo.";
+  }
+}
+
+/* Loading: poems/files.json lists the files in tab order; each file is parsed for /1, /2 ... headings. */
+async function load(){
+  try {
+    const res = await fetch("poems/files.json", {cache: "no-cache"});
+    if (!res.ok) throw new Error("list");
+    const list = await res.json();
+    const entries = (Array.isArray(list) ? list : list.files || []).map(x => typeof x === "string" ? {file: x} : x);
+    const files = await Promise.all(entries.map(async x => {
+      try {
+        const r = await fetch("poems/" + encodeURIComponent(x.file), {cache: "no-cache"});
+        if (!r.ok) return null;
+        return {file: x.file, title: x.title || x.file.replace(/\.txt$/i, ""), poems: parse(await r.text())};
+      } catch (_) { return null; }
+    }));
+    state.files = files.filter(f => f && f.poems.length);
+  } catch (_) {
+    $("text").textContent = location.protocol === "file:"
+      ? "Browsers won't load the poem files from a page opened straight from your computer. Open the site on GitHub Pages, or run a local server (see README)."
+      : "Couldn't load the poems. Check that poems/files.json exists.";
+    $("text").classList.add("empty");
+    return false;
+  }
+  return true;
+}
+
+load().then(ok => { if (!ok) return; sec = sectionFromHash(); show("reader"); });
+})();
+</script>
+</body>
+</html>
